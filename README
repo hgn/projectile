@@ -1,4 +1,10 @@
 
+# Installation #
+
+go get github.com/gorilla/sessions
+go get github.com/gorilla/mux
+
+
 # REST API #
 
 /api/users
