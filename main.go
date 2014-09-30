@@ -21,9 +21,14 @@ func init() {
 		MaxAge:   3600 * 1, // 1 hour
 		HttpOnly: true,
 	}
+
 }
+
 func main() {
 	//session handling
+	router.HandleFunc("/api/users", UsersHandler)
+	router.HandleFunc("/api/user/{user}", UserHandler)
+
 	router.HandleFunc("/welcome", WelcomeHandler)
 	router.HandleFunc("/signIn", SignInHandler)
 	router.HandleFunc("/signInP", SignInPHandler)
