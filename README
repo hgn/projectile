@@ -8,5 +8,12 @@ go get github.com/gorilla/mux
 # REST API #
 
 /api/users
+{
+	"users": [ "user1", "user2" ]
+}
 
-/api/user/id
+/api/user/<user>
+
+{
+	"nick" : "<nick>"
+}
