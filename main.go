@@ -10,8 +10,6 @@ import (
 	"text/template"
 )
 
-import "io/ioutil"
-
 var store = sessions.NewCookieStore([]byte("something-very-secret"))
 
 var router = mux.NewRouter()
@@ -35,7 +33,10 @@ func main() {
 	router.HandleFunc("/welcome", WelcomeHandler)
 	router.HandleFunc("/signIn", SignInHandler)
 	router.HandleFunc("/signInP", SignInPHandler)
+
 	router.HandleFunc("/dashboard", DashboardHandler)
+	router.HandleFunc("/items", ItemsHandler)
+
 	router.HandleFunc("/show", ShowHandler)
 	router.HandleFunc("/signUp", SignUpHandler)
 	router.HandleFunc("/logOut", LogOutHandler)
@@ -134,38 +135,10 @@ func loadPage(title string) (*template.Template, error) {
 	return t, nil
 }
 
-type Navbar struct {
-	Navbar string
-}
-
 type Person struct {
 	Name string
 }
 
-
-func DashboardHandler(res http.ResponseWriter, req *http.Request) {
-
-	fmt.Println("enter DashboardHandler")
-
-	var ret = CheckIfSessionIsValid(res, req)
-	if ret == false {
-		http.Redirect(res, req, "/signInP", http.StatusFound)
-		return
-	}
-
-	p, err := loadPage("dashboard")
-	if err != nil {
-		http.Error(res, "foooooo", http.StatusInternalServerError)
-	}
-
-	content, err := ioutil.ReadFile("page-templates/navbar.html")
-	if err != nil {
-		http.Error(res, "foooooo", http.StatusInternalServerError)
-	}
-
-	x := Navbar{Navbar: string(content[:])}
-	p.Execute(res, x)
-}
 
 func SignInPHandler(res http.ResponseWriter, req *http.Request) {
 

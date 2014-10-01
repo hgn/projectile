@@ -21,7 +21,7 @@ func userHanderGet(res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte(content))
 }
 
-func UsersHandler(res http.ResponseWriter, req *http.Request) {
+func RestUsersHandler(res http.ResponseWriter, req *http.Request) {
 
 	fmt.Println("enter WelcomeHandler")
 
@@ -62,7 +62,7 @@ func UsersHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 
-func UserHandler(res http.ResponseWriter, req *http.Request) {
+func RestUserHandler(res http.ResponseWriter, req *http.Request) {
 
 	fmt.Println("enter Users")
 
