@@ -1,13 +1,25 @@
 package main
 
-import (
-	"fmt"
-	"github.com/gorilla/mux"
-	"net/http"
-	//"encoding/json"
-)
-
+import "fmt"
+import "github.com/gorilla/mux"
+import "net/http"
 import "io/ioutil"
+
+	//"import encoding/json"
+
+
+func userHanderGet(res http.ResponseWriter, req *http.Request) {
+	//data, _ := json.Marshal("{'hello':'wercker!'}")
+	content, err := ioutil.ReadFile("db/users.json")
+	if err != nil {
+		//Do something
+		fmt.Println("Cannot open file for reading %s", err)
+		res.Header().Set("Content-Type", "application/json; charset=utf-8")
+		return
+	}
+	res.Header().Set("Content-Type", "application/json; charset=utf-8")
+	res.Write([]byte(content))
+}
 
 func UsersHandler(res http.ResponseWriter, req *http.Request) {
 
@@ -23,6 +35,8 @@ func UsersHandler(res http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
 		fmt.Println("GET request")
+		userHanderGet(res, req)
+		return
 		// Serve the resource.
 	case "POST":
 		http.Error(res, "Not allows", http.StatusInternalServerError)
@@ -37,21 +51,16 @@ func UsersHandler(res http.ResponseWriter, req *http.Request) {
 		return
 		// Remove the record.
 	default:
+		http.Error(res, "Not allows", http.StatusInternalServerError)
+		return
 		// Give an error message.
 	}
 
-	//data, _ := json.Marshal("{'hello':'wercker!'}")
-	content, err := ioutil.ReadFile("db/users.json")
-	if err == nil {
-		//Do something
-		fmt.Println("Cannot open file for reading")
-		res.Header().Set("Content-Type", "application/json; charset=utf-8")
-		return
-	}
-	res.Header().Set("Content-Type", "application/json; charset=utf-8")
-	res.Write([]byte(content))
 
+		http.Error(res, "internal error", http.StatusInternalServerError)
+		return
 }
+
 
 func UserHandler(res http.ResponseWriter, req *http.Request) {
 
@@ -60,7 +69,7 @@ func UserHandler(res http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	key := vars["user"]
 
-	fmt.Println("key: %s", key)
+	fmt.Println("key: ", key)
 
 	switch req.Method {
 	case "GET":
