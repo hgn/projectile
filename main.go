@@ -7,8 +7,10 @@ import (
 	"net/http"
 	//"time"
 	//"os"
-	"html/template"
+	"text/template"
 )
+
+import "io/ioutil"
 
 var store = sessions.NewCookieStore([]byte("something-very-secret"))
 
@@ -25,9 +27,10 @@ func init() {
 }
 
 func main() {
-	//session handling
-	router.HandleFunc("/api/users", UsersHandler)
-	router.HandleFunc("/api/user/{user}", UserHandler)
+
+	// Rest API
+	router.HandleFunc("/api/users", RestUsersHandler)
+	router.HandleFunc("/api/user/{user}", RestUserHandler)
 
 	router.HandleFunc("/welcome", WelcomeHandler)
 	router.HandleFunc("/signIn", SignInHandler)
@@ -131,9 +134,14 @@ func loadPage(title string) (*template.Template, error) {
 	return t, nil
 }
 
+type Navbar struct {
+	Navbar string
+}
+
 type Person struct {
 	Name string
 }
+
 
 func DashboardHandler(res http.ResponseWriter, req *http.Request) {
 
@@ -150,7 +158,12 @@ func DashboardHandler(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "foooooo", http.StatusInternalServerError)
 	}
 
-	x := Person{Name: "Mary"}
+	content, err := ioutil.ReadFile("page-templates/navbar.html")
+	if err != nil {
+		http.Error(res, "foooooo", http.StatusInternalServerError)
+	}
+
+	x := Navbar{Navbar: string(content[:])}
 	p.Execute(res, x)
 }
 
