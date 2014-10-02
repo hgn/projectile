@@ -5,8 +5,7 @@ import "github.com/gorilla/mux"
 import "net/http"
 import "io/ioutil"
 
-	//"import encoding/json"
-
+//"import encoding/json"
 
 func userHanderGet(res http.ResponseWriter, req *http.Request) {
 	//data, _ := json.Marshal("{'hello':'wercker!'}")
@@ -56,11 +55,9 @@ func RestUsersHandler(res http.ResponseWriter, req *http.Request) {
 		// Give an error message.
 	}
 
-
-		http.Error(res, "internal error", http.StatusInternalServerError)
-		return
+	http.Error(res, "internal error", http.StatusInternalServerError)
+	return
 }
-
 
 func RestUserHandler(res http.ResponseWriter, req *http.Request) {
 

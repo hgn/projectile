@@ -4,11 +4,9 @@ import "fmt"
 import "net/http"
 import "io/ioutil"
 
-
 type Navbar struct {
 	Navbar string
 }
-
 
 func DashboardHandler(res http.ResponseWriter, req *http.Request) {
 
@@ -33,7 +31,6 @@ func DashboardHandler(res http.ResponseWriter, req *http.Request) {
 	x := Navbar{Navbar: string(content[:])}
 	p.Execute(res, x)
 }
-
 
 func ItemsHandler(res http.ResponseWriter, req *http.Request) {
 
