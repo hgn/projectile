@@ -26,6 +26,10 @@ func init() {
 
 func main() {
 
+	port := ":8080"
+
+	fmt.Println("Start Projectile Backend")
+
 	// Rest API
 	router.HandleFunc("/api/users", RestUsersHandler)
 	router.HandleFunc("/api/user/{user}", RestUserHandler)
@@ -45,7 +49,9 @@ func main() {
 	router.NotFoundHandler = http.HandlerFunc(NotFoundHandler)
 
 	http.Handle("/", router)
-	http.ListenAndServe(":8080", nil)
+
+	fmt.Println("Listen on", port)
+	http.ListenAndServe(port, nil)
 }
 
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
