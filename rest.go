@@ -1,11 +1,13 @@
 package main
 
+import "os"
 import "fmt"
 import "github.com/gorilla/mux"
 import "net/http"
 import "io/ioutil"
 import "encoding/json"
 import "errors"
+import "time"
 
 //"import encoding/json"
 
@@ -149,15 +151,37 @@ func checkIfDataisValid(data item_struct) error {
 // Open file in append mode and add
 // JSON encoded line
 func appendItemData(data item_file_line) error {
-	fmt.Println(data)
+
+	_, err := os.Stat("db/items.json")
+	if err != nil {
+		// no such file or dir
+	}
+
+	f, err := os.OpenFile("db/items.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		panic(err)
+	}
+
+	defer f.Close()
+
+	s, _ := json.Marshal(data)
+
+	if _, err = f.WriteString(string(s) + "\n"); err != nil {
+		panic(err)
+	}
+
 	return nil
 }
 
 // return UNIX time in milliseconds,
 // this should be unique enough for one user
 // for now
-func getNewItemId() int {
-	return 1000
+func getNewItemId() string {
+	ct := time.Now()
+	now := ct.Nanosecond()
+	miliSeconds := (now % 1e9) / 1e6
+	sec := ct.UTC().Format("20060102150405")
+	return fmt.Sprintf("%s%03d", sec, miliSeconds)
 }
 
 func addItem(data item_struct) error {
@@ -178,6 +202,11 @@ func addItem(data item_struct) error {
 
 	return nil
 }
+
+type client_items_response_msg struct {
+	Status string
+}
+
 
 func itemsHanderPost(w http.ResponseWriter, r *http.Request) {
 	var t item_struct
@@ -211,6 +240,12 @@ func itemsHanderPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var res_msg client_items_response_msg
+	res_msg.Status = "success"
+
+	msg, _ := json.Marshal(res_msg)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write([]byte(msg))
 }
 
 func RestItemsHandler(res http.ResponseWriter, req *http.Request) {
