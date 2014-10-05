@@ -34,6 +34,8 @@ func main() {
 	router.HandleFunc("/api/users", RestUsersHandler)
 	router.HandleFunc("/api/user/{user}", RestUserHandler)
 
+	router.HandleFunc("/api/items", RestItemsHandler)
+
 	router.HandleFunc("/welcome", WelcomeHandler)
 	router.HandleFunc("/signIn", SignInHandler)
 	router.HandleFunc("/signInP", SignInPHandler)
@@ -54,9 +56,10 @@ func main() {
 	http.ListenAndServe(port, nil)
 }
 
-func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("not found\n")
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+func NotFoundHandler(res http.ResponseWriter, req *http.Request) {
+	path := req.URL.Path
+	fmt.Println("not found: ", path)
+	http.Redirect(res, req, "/", http.StatusSeeOther)
 }
 
 func ShowHandler(res http.ResponseWriter, req *http.Request) {
