@@ -117,22 +117,71 @@ func itemsHanderGet(res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte(content))
 }
 
+// JSON encoded content in form of
+// { desc: "foo", bar: "baz" }
+// no comas are added, go logic will
+// add these as a prepartion before 
+// transport
+type item_file_line struct {
+	Id string
+	Description string
+}
+
 type item_struct struct {
 	Command string
 	Data    map[string]string
 }
 
-func addItem(data item_struct) error {
+func checkIfDataisValid(data item_struct) error {
 	// read over all items and get the highest
 	// item id, we will get the new item id+1
 	// item recycling is not implemented now
-	fmt.Println(data.Data["Description"])
+	desc, ok := data.Data["Description"]
+	if ok != true {
+		return errors.New("Item Description mission from struct")
+	}
 
-	//return errors.New("Foo")
+	fmt.Println(desc)
+
+	return nil
+}
+
+// Open file in append mode and add
+// JSON encoded line
+func appendItemData(data item_file_line) error {
+	fmt.Println(data)
+	return nil
+}
+
+// return UNIX time in milliseconds,
+// this should be unique enough for one user
+// for now
+func getNewItemId() int {
+	return 1000
+}
+
+func addItem(data item_struct) error {
+
+	err := checkIfDataisValid(data)
+	if err != nil {
+		return err
+	}
+
+	var new_data item_file_line
+	new_data.Id = getNewItemId()
+	new_data.Description = data.Data["Description"]
+
+	err = appendItemData(new_data)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func itemsHanderPost(w http.ResponseWriter, r *http.Request) {
+	var t item_struct
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("Failure in reading from client %s", err)
@@ -140,8 +189,6 @@ func itemsHanderPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(string(body))
-	var t item_struct
 	err = json.Unmarshal(body, &t)
 	if err != nil {
 		fmt.Println("Failure in item POST struct", err)
