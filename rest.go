@@ -5,6 +5,7 @@ import "github.com/gorilla/mux"
 import "net/http"
 import "io/ioutil"
 import "encoding/json"
+import "errors"
 
 //"import encoding/json"
 
@@ -116,15 +117,24 @@ func itemsHanderGet(res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte(content))
 }
 
-
 type item_struct struct {
-	Command string;
-	Data map[string]string;
+	Command string
+	Data    map[string]string
+}
+
+func addItem(data item_struct) error {
+	// read over all items and get the highest
+	// item id, we will get the new item id+1
+	// item recycling is not implemented now
+	fmt.Println(data.Data["Description"])
+
+	//return errors.New("Foo")
+	return nil
 }
 
 func itemsHanderPost(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
-	if (err != nil) {
+	if err != nil {
 		fmt.Println("Failure in reading from client %s", err)
 		// FIXME: return negative status code
 		return
@@ -133,17 +143,28 @@ func itemsHanderPost(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(string(body))
 	var t item_struct
 	err = json.Unmarshal(body, &t)
-	if (err != nil) {
+	if err != nil {
 		fmt.Println("Failure in item POST struct", err)
 		return
 	}
 
 	fmt.Println(t.Command)
-	fmt.Println(t.Data["Description"])
+	err = errors.New("Not implemented")
+	switch t.Command {
+	case "add":
+		err = addItem(t)
+		// Serve the resource.
+	case "del":
+	default:
+		// Give an error message.
+	}
 
+	if err != nil {
+		fmt.Println("item error occured", err)
+		return
+	}
 
 }
-
 
 func RestItemsHandler(res http.ResponseWriter, req *http.Request) {
 
