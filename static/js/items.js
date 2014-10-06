@@ -71,7 +71,7 @@ function update_items_table() {
 		$('#example').dataTable( {
 			"paging":   false,
 			"info":     false,
-			"order": [[ 2, "desc" ]]
+			"order": [[ 0, "desc" ]]
 		} );
 
 	});
