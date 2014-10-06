@@ -8,8 +8,10 @@ import "io/ioutil"
 import "encoding/json"
 import "errors"
 import "time"
+import "bytes"
+import "bufio"
 
-//"import encoding/json"
+const itemsFilePath string = "db/items.json"
 
 func userHanderGet(res http.ResponseWriter, req *http.Request) {
 	//data, _ := json.Marshal("{'hello':'wercker!'}")
@@ -106,17 +108,37 @@ func RestUserHandler(res http.ResponseWriter, req *http.Request) {
 	p.Execute(res, x)
 }
 
-func itemsHanderGet(res http.ResponseWriter, req *http.Request) {
-	//data, _ := json.Marshal("{'hello':'wercker!'}")
-	content, err := ioutil.ReadFile("db/users.json")
+func generateAllItemsAsJson() (data string, err error) {
+	file, err := os.Open(itemsFilePath)
 	if err != nil {
-		//Do something
-		fmt.Println("Cannot open file for reading %s", err)
-		res.Header().Set("Content-Type", "application/json; charset=utf-8")
-		return
+		return "", err
 	}
+	defer file.Close()
+
+    var buffer bytes.Buffer
+	var is_not_first bool = false
+	buffer.WriteString("[\n")
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		if is_not_first {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString(scanner.Text())
+		buffer.WriteString("\n")
+		is_not_first = true
+	}
+	buffer.WriteString("]\n")
+	return buffer.String(), scanner.Err()
+}
+
+func itemsHanderGet(res http.ResponseWriter, req *http.Request) {
+	data, err := generateAllItemsAsJson()
+	if err != nil {
+		panic("cannot open data file")
+	}
+	fmt.Println(data)
 	res.Header().Set("Content-Type", "application/json; charset=utf-8")
-	res.Write([]byte(content))
+	res.Write([]byte(data))
 }
 
 // JSON encoded content in form of
@@ -152,12 +174,12 @@ func checkIfDataisValid(data item_struct) error {
 // JSON encoded line
 func appendItemData(data item_file_line) error {
 
-	_, err := os.Stat("db/items.json")
+	_, err := os.Stat(itemsFilePath)
 	if err != nil {
 		// no such file or dir
 	}
 
-	f, err := os.OpenFile("db/items.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(itemsFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		panic(err)
 	}
@@ -262,7 +284,7 @@ func RestItemsHandler(res http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
 		fmt.Println("GET request")
-		//itemsHanderGet(res, req)
+		itemsHanderGet(res, req)
 		return
 		// Serve the resource.
 	case "POST":
