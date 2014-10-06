@@ -1,8 +1,5 @@
 
-function update_table(data) {
-	console.log("update table");
-	console.log("length array: " + data.length)
-
+function construct_table(data) {
 	var oldTable = document.getElementById('example'),
 	    newTable = oldTable.cloneNode();
 
@@ -30,15 +27,15 @@ function update_table(data) {
 		var tr = document.createElement('tr');
 
 		var td = document.createElement('td');
-		td.appendChild(document.createTextNode("foo"));
+		td.appendChild(document.createTextNode(data[i]["Id"]));
 		tr.appendChild(td);
 
 		td = document.createElement('td');
-		td.appendChild(document.createTextNode("foo"));
+		td.appendChild(document.createTextNode(data[i]["Description"]));
 		tr.appendChild(td);
 
 		td = document.createElement('td');
-		td.appendChild(document.createTextNode("foo"));
+		td.appendChild(document.createTextNode(data[i]["Description"]));
 		tr.appendChild(td);
 
 		tbody.appendChild(tr);
@@ -66,6 +63,22 @@ function update_table(data) {
 
 }
 
+function update_items_table() {
+	$.ajax({
+		url: "api/items"
+	}).then(function(data) {
+		construct_table(data)
+		$('#example').dataTable( {
+			"paging":   false,
+			"info":     false,
+			"order": [[ 2, "desc" ]]
+		} );
+
+	});
+
+}
+
+
 jQuery(document).ready(function($) {
 
 	$(".clickableRow").click(function() {
@@ -78,16 +91,7 @@ jQuery(document).ready(function($) {
 		$('.greeting-id').append(data.users);
 	});
 
-	$.ajax({
-		url: "api/items"
-	}).then(function(data) {
-		console.log(data[0]);
-		update_table(data)
-		$('#rest-item-data').append(data[0]["Id"]);
-	});
-
-	setTimeout(function(){
-		$('#myModal').modal('toggle');},40000);
+	update_items_table()
 
 	$('#example1').datepicker({
 		format: "dd/mm/yyyy"
@@ -102,7 +106,10 @@ $("#myFormSubmit").click(function(e){
 	$.post('/api/items',
 			JSON.stringify(xobj),
 			function(data, status, xhr) {
-				console.log(data.Status);
+				// we update the table not immediatly because
+				// we first remove the modal dialog to get a
+				// smoother experience[TM]
+				setTimeout(update_items_table(), 1)
 			});
 	// after submit, disable the modal
 	$('#myModal').modal('toggle');

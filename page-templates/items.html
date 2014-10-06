@@ -12,6 +12,7 @@
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="static/css/datepicker.css">
+    <link rel="stylesheet" href="static/css/jquery.dataTables.css">
     <link href="static/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
@@ -70,58 +71,8 @@
 </nav>
 
 
-<table id="example" class="table table-striped table-hover">
+<table id="example" class="table table-striped table-hover cellspacing="0" width="100%"">
 
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>First Name</th>
-          <th>Last Name</th>
-        </tr>
-      </thead>
-
- <tbody>
-  <tr class='clickableRow' href='url://link-for-first-row/'>
-    <td>Jill</td>
-    <td>Smith</td>
-    <td>50</td>
-  </tr>
-  <tr class='clickableRow' href='url://some-other-link/'>
-    <td>Eve</td>
-    <td>Jackson</td>
-    <td>94</td>
-  </tr>
-  <tr>
-    <td>Jill</td>
-    <td>Smith</td>
-    <td>50</td>
-  </tr>
-  <tr>
-    <a href="#"><td>Eve</td></a>
-    <td>Jackson</td>
-    <td>94</td>
-  </tr>
-  <tr>
-    <td>Jill</td>
-    <td>Smith</td>
-    <td>50</td>
-  </tr>
-  <tr>
-    <td>Eve</td>
-    <td>Jackson</td>
-    <td>94</td>
-  </tr>
-  <tr class="success">
-    <td>Jill</td>
-    <td>Smith</td>
-    <td>50</td>
-  </tr>
-  <tr>
-    <td>Eve</td>
-    <td>Jackson</td>
-    <td>94</td>
-  </tr>
-</tbody>
 </table>
 
 
@@ -239,5 +190,7 @@
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="static/js/ie10-viewport-bug-workaround.js"></script>
     <script src="static/js/items.js"></script>
+		<script src="static/js/jquery.dataTables.min.js"></script>
+		<script	src="static/js/dataTables.bootstrap.js"></script>
   </body>
 </html>
