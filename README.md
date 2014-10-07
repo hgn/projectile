@@ -1,3 +1,6 @@
+# Projector - Project Management #
+
+A multi-user management software to plan, administrate and monitor projects.
 
 # Installation #
 
