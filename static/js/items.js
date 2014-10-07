@@ -150,7 +150,12 @@ $("#myFormSubmit").click(function(e){
 		return;
 	}
 	robj["Deadline"] = $('#form-deadline').val();
-	console.log(robj["Deadline"]);
+	robj["AssignedTo"] = $('#form-assigned').val();
+	robj["AssociatedPerson"] = $('#form-associated').val();
+	robj["Tags"] = $('#form-tags').val();
+	robj["Priority"] = $('#form-priority').val();
+
+	console.log(robj["Tags"]);
 	var xobj = { Command: "add", Data: { Description: robj["Description"], Deadline: robj["Deadline"] }}
 	$.post('/api/items',
 			JSON.stringify(xobj),
