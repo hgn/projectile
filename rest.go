@@ -149,6 +149,13 @@ func itemsHanderGet(res http.ResponseWriter, req *http.Request) {
 type item_file_line struct {
 	Id string
 	Description string
+	Deadline string
+	Priority string
+	AssignedTo string
+	AssociatedPerson string
+	CreationDate string
+	ModifiedDate string
+	Information string
 }
 
 type item_struct struct {
@@ -203,7 +210,7 @@ func getNewItemId() string {
 	now := ct.Nanosecond()
 	miliSeconds := (now % 1e9) / 1e6
 	sec := ct.UTC().Format("20060102150405")
-	return fmt.Sprintf("%s%03d", sec, miliSeconds)
+	return fmt.Sprintf("item-%s%03d", sec, miliSeconds)
 }
 
 func addItem(data item_struct) error {
@@ -215,7 +222,14 @@ func addItem(data item_struct) error {
 
 	var new_data item_file_line
 	new_data.Id = getNewItemId()
-	new_data.Description = data.Data["Description"]
+	new_data.Description, _ = data.Data["Description"]
+	new_data.Deadline, _ = data.Data["Deadline"]
+	new_data.Priority, _ = data.Data["Priority"]
+	new_data.AssignedTo, _ = data.Data["AssignedTo"]
+	new_data.AssociatedPerson, _ = data.Data["AssociatedPerson"]
+	new_data.CreationDate, _ = data.Data["CreationDate"]
+	new_data.ModifiedDate, _ = data.Data["ModifiedDate"]
+	new_data.Information, _ = data.Data["Information"]
 
 	err = appendItemData(new_data)
 	if err != nil {
