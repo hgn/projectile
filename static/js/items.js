@@ -1,6 +1,7 @@
 
+
 function construct_table(data) {
-	var oldTable = document.getElementById('example'),
+	var oldTable = document.getElementById("maindatatable"),
 	    newTable = oldTable.cloneNode();
 
 	var thead = document.createElement('thead');
@@ -68,7 +69,9 @@ function update_items_table() {
 		url: "api/items"
 	}).then(function(data) {
 		construct_table(data)
-		$('#example').dataTable( {
+		//$('#tabledisplay').empty();
+	  //$('#tabledisplay').append("<table id=\"maindatatable\" class=\"table table-striped table-hover\" cellspacing=\"0\" width=\"100%\"></table>");
+		$('#maindatatable').dataTable( {
 			"paging":   false,
 			"info":     false,
 			"order": [[ 0, "desc" ]]
@@ -97,12 +100,23 @@ jQuery(document).ready(function($) {
 		format: "dd/mm/yyyy"
 	});
 
+	$('#example2').datepicker({
+		format: "dd/mm/yyyy"
+	});
+
 });
 
 
 $("#myFormSubmit").click(function(e){
 	e.preventDefault();
-	var xobj = { Command: "add", Data: { Description: "foo" }}
+	var robj =  {};
+	robj["Description"] = $('#description').val();
+	if (robj["Description"] == "") {
+		alert("Empty Description String");
+		return;
+	}
+	var data = $('#description').val(); console.log(data);
+	var xobj = { Command: "add", Data: { Description: robj["Description"] }}
 	$.post('/api/items',
 			JSON.stringify(xobj),
 			function(data, status, xhr) {
