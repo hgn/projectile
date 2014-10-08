@@ -1,3 +1,6 @@
-{
-	"users": [ "hgn", "foo" ]
-}
+[
+	"Gerhard": { "avatarmini": "static/images/avatar-blue.png" },
+	"Lukas": { "avatarmini": "static/images/avatar-orange.png" },
+	"Hagen": { "avatarmini": "static/images/avatar-violet.png" },
+	"Felix": { "avatarmini": "static/images/avatar-human.png" }
+]

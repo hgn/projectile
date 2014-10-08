@@ -152,7 +152,8 @@ type item_file_line struct {
 	Deadline string
 	Priority string
 	AssignedTo string
-	AssociatedPerson string
+	AssociatedPerson []string
+	Tags []string
 	CreationDate string
 	ModifiedDate string
 	Information string
@@ -163,19 +164,35 @@ type item_struct struct {
 	Data    map[string]string
 }
 
-func checkIfDataisValid(data item_struct) error {
+type ItemJson struct {
+	Command string `json:Command"`
+	ItemJsonData ItemJsonData `json:"Data"`
+}
+
+type ItemJsonData struct {
+	Description  string `json:"Description"`
+	Deadline  string `json:"Deadline"`
+	AssignedTo  string `json:"AssignedTo"`
+	Priority  string `json:"Priority"`
+	Information  string `json:"Information"`
+	Tags []string  `json:"Tags"`
+	Persons []string  `json:"AssociatedPersons"`
+}
+
+
+//func checkIfDataisValid(data item_struct) error {
 	// read over all items and get the highest
 	// item id, we will get the new item id+1
 	// item recycling is not implemented now
-	desc, ok := data.Data["Description"]
-	if ok != true {
-		return errors.New("Item Description mission from struct")
-	}
+//	desc, ok := data.Data["Description"]
+//	if ok != true {
+//		return errors.New("Item Description mission from struct")
+//	}
 
-	fmt.Println(desc)
+//	fmt.Println(desc)
 
-	return nil
-}
+//	return nil
+//}
 
 // Open file in append mode and add
 // JSON encoded line
@@ -213,23 +230,32 @@ func getNewItemId() string {
 	return fmt.Sprintf("item-%s%03d", sec, miliSeconds)
 }
 
-func addItem(data item_struct) error {
+func addItem(data ItemJson) error {
 
-	err := checkIfDataisValid(data)
-	if err != nil {
-		return err
+	var err error
+
+	if data.Command != "add" {
+		// the only command I know, return if not add
+		return errors.New("only add supported")
 	}
+
+//	err := checkIfDataisValid(data)
+//	if err != nil {
+//		return err
+//	}
 
 	var new_data item_file_line
 	new_data.Id = getNewItemId()
-	new_data.Description, _ = data.Data["Description"]
-	new_data.Deadline, _ = data.Data["Deadline"]
-	new_data.Priority, _ = data.Data["Priority"]
-	new_data.AssignedTo, _ = data.Data["AssignedTo"]
-	new_data.AssociatedPerson, _ = data.Data["AssociatedPerson"]
-	new_data.CreationDate, _ = data.Data["CreationDate"]
-	new_data.ModifiedDate, _ = data.Data["ModifiedDate"]
-	new_data.Information, _ = data.Data["Information"]
+	new_data.Description = data.ItemJsonData.Description
+	new_data.Deadline = data.ItemJsonData.Deadline
+	new_data.Priority = data.ItemJsonData.Priority
+	new_data.AssignedTo = data.ItemJsonData.AssignedTo
+	new_data.AssociatedPerson = data.ItemJsonData.Persons
+	new_data.Tags = data.ItemJsonData.Tags
+	new_data.Information = data.ItemJsonData.Information
+
+	new_data.CreationDate = time.Now().UTC().Format("20060102150405")
+	new_data.ModifiedDate = new_data.CreationDate
 
 	err = appendItemData(new_data)
 	if err != nil {
@@ -245,7 +271,7 @@ type client_items_response_msg struct {
 
 
 func itemsHanderPost(w http.ResponseWriter, r *http.Request) {
-	var t item_struct
+	var t ItemJson
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {

@@ -116,17 +116,21 @@ function update_items_table() {
 
 }
 
-jQuery(document).ready(function($) {
+var usersData;
 
-	$(".clickableRow").click(function() {
-		alert($(this).attr("href"));
-	});
-
+function update_user_database() {
+  // first we fetch the user database
 	$.ajax({
 		url: "api/users"
 	}).then(function(data) {
-		$('.greeting-id').append(data.users);
+		usersData = data
 	});
+
+}
+
+jQuery(document).ready(function($) {
+
+	update_user_database();
 
 	update_items_table();
 
@@ -151,12 +155,20 @@ $("#myFormSubmit").click(function(e){
 	}
 	robj["Deadline"] = $('#form-deadline').val();
 	robj["AssignedTo"] = $('#form-assigned').val();
-	robj["AssociatedPerson"] = $('#form-associated').val();
+	robj["AssociatedPersons"] = $('#form-associated').val();
 	robj["Tags"] = $('#form-tags').val();
 	robj["Priority"] = $('#form-priority').val();
+	robj["Information"] = $('#form-information').val();
 
 	console.log(robj["Tags"]);
-	var xobj = { Command: "add", Data: { Description: robj["Description"], Deadline: robj["Deadline"] }}
+	var xobj = { Command: "add",
+								Data: { Description: robj["Description"],
+								Deadline: robj["Deadline"],
+								Tags: robj["Tags"],
+								AssignedTo: robj["AssignedTo"],
+								Priority: robj["Priority"],
+								Information: robj["Information"],
+								AssociatedPersons: robj["AssociatedPersons"]}}
 	$.post('/api/items',
 			JSON.stringify(xobj),
 			function(data, status, xhr) {
