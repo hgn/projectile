@@ -1,6 +1,5 @@
 package main
 
-import "fmt"
 import "net/http"
 import "io/ioutil"
 
@@ -9,16 +8,13 @@ type Navbar struct {
 }
 
 func DashboardHandler(res http.ResponseWriter, req *http.Request) {
-
-	fmt.Println("enter DashboardHandler")
-
 	var ret = CheckIfSessionIsValid(res, req)
 	if ret == false {
 		http.Redirect(res, req, "/signInP", http.StatusFound)
 		return
 	}
 
-	p, err := loadPage("dashboard")
+	p, err := loadPageTemplate("dashboard")
 	if err != nil {
 		http.Error(res, "foooooo", http.StatusInternalServerError)
 	}
@@ -33,16 +29,13 @@ func DashboardHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func ItemsHandler(res http.ResponseWriter, req *http.Request) {
-
-	fmt.Println("enter ItemsHandler")
-
 	var ret = CheckIfSessionIsValid(res, req)
 	if ret == false {
 		http.Redirect(res, req, "/signInP", http.StatusFound)
 		return
 	}
 
-	p, err := loadPage("items")
+	p, err := loadPageTemplate("items")
 	if err != nil {
 		http.Error(res, "foooooo", http.StatusInternalServerError)
 	}

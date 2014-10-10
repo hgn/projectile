@@ -14,7 +14,6 @@ import "bufio"
 const itemsFilePath string = "db/items.json"
 
 func userHanderGet(res http.ResponseWriter, req *http.Request) {
-	//data, _ := json.Marshal("{'hello':'wercker!'}")
 	content, err := ioutil.ReadFile("db/users.json")
 	if err != nil {
 		//Do something
@@ -99,7 +98,7 @@ func RestUserHandler(res http.ResponseWriter, req *http.Request) {
 		}
 	*/
 
-	p, err := loadPage("welcome")
+	p, err := loadPageTemplate("welcome")
 	if err != nil {
 		http.Error(res, "foooooo", http.StatusInternalServerError)
 	}

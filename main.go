@@ -6,9 +6,13 @@ import (
 	"github.com/gorilla/sessions"
 	"net/http"
 	//"time"
-	//"os"
+	"os"
 	"text/template"
 )
+import "encoding/json"
+
+const sessionName string = "user-session"
+
 
 var store = sessions.NewCookieStore([]byte("something-very-secret"))
 
@@ -36,9 +40,8 @@ func main() {
 
 	router.HandleFunc("/api/items", RestItemsHandler)
 
-	router.HandleFunc("/welcome", WelcomeHandler)
+	router.HandleFunc("/welcome", LandingPageHandler)
 	router.HandleFunc("/signIn", SignInHandler)
-	router.HandleFunc("/signInP", SignInPHandler)
 
 	router.HandleFunc("/dashboard", DashboardHandler)
 	router.HandleFunc("/items", ItemsHandler)
@@ -84,41 +87,56 @@ func CheckIfSessionIsValid(res http.ResponseWriter, req *http.Request) bool {
 	}
 }
 
-func userValid(username, password string) (bool)
-{
+var dbPasswdJson []struct {
+	Username  string `json:"Username"`
+	Password  string `json:"Password"`
+}
+
+func userValid(username, password string) (bool) {
+	configFile, err := os.Open("db/passwd.json")
+	if err != nil {
+		fmt.Println("opening config file", err.Error())
+		return false
+	}
+
+	jsonParser := json.NewDecoder(configFile)
+	if err = jsonParser.Decode(&dbPasswdJson); err != nil {
+		fmt.Println("parsing config file", err.Error())
+		return false
+	}
+
+	// search hashed password
+	hashedPassword := ""
+	for _, entry := range dbPasswdJson {
+		if entry.Username == username {
+			hashedPassword = entry.Password
+		}
+	}
+	if hashedPassword == "" {
+		fmt.Println("User not in database or password not available")
+		return false
+	}
+
+	return CheckPassword([]byte(password), []byte(hashedPassword))
 }
 
 //handler for signIn
 func SignInHandler(res http.ResponseWriter, req *http.Request) {
-
-	username := req.FormValue("username")
-	password := req.FormValue("password")
-	fmt.Printf("username: %s\n", username)
-	fmt.Printf("password: %s\n", password)
+	username, password := req.FormValue("username"), req.FormValue("password")
 
 	if !userValid(username, password) {
-		fmt.Printf("Password %s for user %s invalid", username, valid)
+		fmt.Printf("Password for user %s invalid\n", username)
 		http.Redirect(res, req, "/welcome", http.StatusFound)
 	}
 
-	//store in session variable
 	sessionNew, _ := store.Get(req, sessionName)
 
-	// Set some session values.
 	sessionNew.Values["username"] = username
-	//sessionNew.Options.Secure = true
-	// 10 minutes
-	//sessionNew.Options.MaxAge = 60 * 10
-
-	// Save it.
 	err := sessionNew.Save(req, res)
 	if err != nil {
-		// handle the error case
+		panic("session save error")
 	}
 	store.Save(req, res, sessionNew)
-
-	fmt.Println("Session after logging:")
-	fmt.Println(sessionNew)
 
 	http.Redirect(res, req, "/dashboard", http.StatusFound)
 }
@@ -144,7 +162,7 @@ func LogOutHandler(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, "/welcome", http.StatusFound)
 }
 
-func loadPage(title string) (*template.Template, error) {
+func loadPageTemplate(title string) (*template.Template, error) {
 	filename := "page-templates/" + title + ".html"
 	t, err := template.ParseFiles(filename)
 	if err != nil {
@@ -157,43 +175,15 @@ type Person struct {
 	Name string
 }
 
-func SignInPHandler(res http.ResponseWriter, req *http.Request) {
-	var ret = CheckIfSessionIsValid(res, req)
-	if ret == false && req.URL.Path != "/signInP" {
-		http.Redirect(res, req, "/signInP", http.StatusFound)
-		return
-	}
 
-	p, err := loadPage("sigin")
+func LandingPageHandler(res http.ResponseWriter, req *http.Request) {
+	p, err := loadPageTemplate("welcome")
 	if err != nil {
-		http.Error(res, "foooooo", http.StatusInternalServerError)
+		http.Error(res, "Failed to load welcome page", http.StatusInternalServerError)
 	}
 	x := Person{Name: "Mary"}
 	p.Execute(res, x)
 }
-
-func WelcomeHandler(res http.ResponseWriter, req *http.Request) {
-
-	fmt.Println("enter WelcomeHandler")
-
-	/*
-		var ret = CheckIfSessionIsValid(res, req)
-		if ret == false && req.URL.Path != "/signInP" {
-				http.Redirect(res, req, "/signInP", http.StatusFound)
-				return
-		}
-	*/
-
-	p, err := loadPage("welcome")
-	if err != nil {
-		http.Error(res, "foooooo", http.StatusInternalServerError)
-	}
-	fmt.Println(p)
-	x := Person{Name: "Mary"}
-	p.Execute(res, x)
-}
-
-const sessionName string "user-session"
 
 func SessionHandler(res http.ResponseWriter, req *http.Request) {
 
@@ -204,10 +194,8 @@ func SessionHandler(res http.ResponseWriter, req *http.Request) {
 		switch val {
 		case "":
 			http.Redirect(res, req, "/welcome", http.StatusFound)
-			fmt.Println("1")
 		default:
 			http.Redirect(res, req, "/dashboard", http.StatusFound)
-			fmt.Println("2")
 		}
 	} else {
 		// if val is not a string type

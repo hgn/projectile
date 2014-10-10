@@ -51,6 +51,15 @@ func ReadSaltDB() ([]byte, error) {
 	return b, nil
 }
 
+func CheckPassword(plain, hashedPassword []byte) bool {
+	err := bcrypt.CompareHashAndPassword(hashedPassword, plain)
+	if err == nil {
+		return true
+	}
+	fmt.Println(err)
+	return false
+}
+
 func CryptPassword(password []byte) ([]byte, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
 	if err != nil {
@@ -58,9 +67,6 @@ func CryptPassword(password []byte) ([]byte, error) {
 	}
 
 	fmt.Println(string(hashedPassword))
-
-	err = bcrypt.CompareHashAndPassword(hashedPassword, password)
-	fmt.Println(err)
 
 	return hashedPassword, nil
 }
