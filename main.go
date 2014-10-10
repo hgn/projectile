@@ -70,7 +70,7 @@ func ShowHandler(res http.ResponseWriter, req *http.Request) {
 
 func CheckIfSessionIsValid(res http.ResponseWriter, req *http.Request) bool {
 
-	session, _ := store.Get(req, "loginSession")
+	session, _ := store.Get(req, sessionName)
 	if val, ok := session.Values["username"].(string); ok {
 		// if val is a string
 		switch val {
@@ -84,6 +84,10 @@ func CheckIfSessionIsValid(res http.ResponseWriter, req *http.Request) bool {
 	}
 }
 
+func userValid(username, password string) (bool)
+{
+}
+
 //handler for signIn
 func SignInHandler(res http.ResponseWriter, req *http.Request) {
 
@@ -92,8 +96,13 @@ func SignInHandler(res http.ResponseWriter, req *http.Request) {
 	fmt.Printf("username: %s\n", username)
 	fmt.Printf("password: %s\n", password)
 
+	if !userValid(username, password) {
+		fmt.Printf("Password %s for user %s invalid", username, valid)
+		http.Redirect(res, req, "/welcome", http.StatusFound)
+	}
+
 	//store in session variable
-	sessionNew, _ := store.Get(req, "loginSession")
+	sessionNew, _ := store.Get(req, sessionName)
 
 	// Set some session values.
 	sessionNew.Values["username"] = username
@@ -121,7 +130,7 @@ func SignUpHandler(res http.ResponseWriter, req *http.Request) {
 
 //handler for logOut
 func LogOutHandler(res http.ResponseWriter, req *http.Request) {
-	sessionOld, err := store.Get(req, "loginSession")
+	sessionOld, err := store.Get(req, sessionName)
 
 	fmt.Println("Session in logout")
 	fmt.Println(sessionOld)
@@ -149,9 +158,6 @@ type Person struct {
 }
 
 func SignInPHandler(res http.ResponseWriter, req *http.Request) {
-
-	fmt.Println("enter SignInPHandler")
-
 	var ret = CheckIfSessionIsValid(res, req)
 	if ret == false && req.URL.Path != "/signInP" {
 		http.Redirect(res, req, "/signInP", http.StatusFound)
@@ -162,7 +168,6 @@ func SignInPHandler(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		http.Error(res, "foooooo", http.StatusInternalServerError)
 	}
-	fmt.Println(p)
 	x := Person{Name: "Mary"}
 	p.Execute(res, x)
 }
@@ -188,9 +193,11 @@ func WelcomeHandler(res http.ResponseWriter, req *http.Request) {
 	p.Execute(res, x)
 }
 
+const sessionName string "user-session"
+
 func SessionHandler(res http.ResponseWriter, req *http.Request) {
 
-	session, _ := store.Get(req, "loginSession")
+	session, _ := store.Get(req, sessionName)
 
 	if val, ok := session.Values["username"].(string); ok {
 		// if val is a string

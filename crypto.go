@@ -59,6 +59,9 @@ func CryptPassword(password []byte) ([]byte, error) {
 
 	fmt.Println(string(hashedPassword))
 
+	err = bcrypt.CompareHashAndPassword(hashedPassword, password)
+	fmt.Println(err)
+
 	return hashedPassword, nil
 }
 
@@ -74,6 +77,8 @@ func InitialzeCryptSystem() error {
 			}
 		}
 	}
+
+	CryptPassword([]byte("foooba"))
 
 	return nil
 }
