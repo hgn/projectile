@@ -114,7 +114,7 @@ func generateAllItemsAsJson() (data string, err error) {
 	}
 	defer file.Close()
 
-    var buffer bytes.Buffer
+	var buffer bytes.Buffer
 	var is_not_first bool = false
 	buffer.WriteString("[\n")
 	scanner := bufio.NewScanner(file)
@@ -143,19 +143,19 @@ func itemsHanderGet(res http.ResponseWriter, req *http.Request) {
 // JSON encoded content in form of
 // { desc: "foo", bar: "baz" }
 // no comas are added, go logic will
-// add these as a prepartion before 
+// add these as a prepartion before
 // transport
 type item_file_line struct {
-	Id string
-	Description string
-	Deadline string
-	Priority string
-	AssignedTo string
+	Id               string
+	Description      string
+	Deadline         string
+	Priority         string
+	AssignedTo       string
 	AssociatedPerson []string
-	Tags []string
-	CreationDate string
-	ModifiedDate string
-	Information string
+	Tags             []string
+	CreationDate     string
+	ModifiedDate     string
+	Information      string
 }
 
 type item_struct struct {
@@ -164,25 +164,24 @@ type item_struct struct {
 }
 
 type ItemJson struct {
-	Command string `json:Command"`
+	Command      string       `json:Command"`
 	ItemJsonData ItemJsonData `json:"Data"`
 }
 
 type ItemJsonData struct {
-	Description  string `json:"Description"`
-	Deadline  string `json:"Deadline"`
-	AssignedTo  string `json:"AssignedTo"`
-	Priority  string `json:"Priority"`
-	Information  string `json:"Information"`
-	Tags []string  `json:"Tags"`
-	Persons []string  `json:"AssociatedPersons"`
+	Description string   `json:"Description"`
+	Deadline    string   `json:"Deadline"`
+	AssignedTo  string   `json:"AssignedTo"`
+	Priority    string   `json:"Priority"`
+	Information string   `json:"Information"`
+	Tags        []string `json:"Tags"`
+	Persons     []string `json:"AssociatedPersons"`
 }
 
-
 //func checkIfDataisValid(data item_struct) error {
-	// read over all items and get the highest
-	// item id, we will get the new item id+1
-	// item recycling is not implemented now
+// read over all items and get the highest
+// item id, we will get the new item id+1
+// item recycling is not implemented now
 //	desc, ok := data.Data["Description"]
 //	if ok != true {
 //		return errors.New("Item Description mission from struct")
@@ -238,10 +237,10 @@ func addItem(data ItemJson) error {
 		return errors.New("only add supported")
 	}
 
-//	err := checkIfDataisValid(data)
-//	if err != nil {
-//		return err
-//	}
+	//	err := checkIfDataisValid(data)
+	//	if err != nil {
+	//		return err
+	//	}
 
 	var new_data item_file_line
 	new_data.Id = getNewItemId()
@@ -267,7 +266,6 @@ func addItem(data ItemJson) error {
 type client_items_response_msg struct {
 	Status string
 }
-
 
 func itemsHanderPost(w http.ResponseWriter, r *http.Request) {
 	var t ItemJson

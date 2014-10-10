@@ -6,13 +6,13 @@ import (
 	"github.com/gorilla/sessions"
 	"net/http"
 	//"time"
+	"io/ioutil"
 	"os"
 	"text/template"
 )
 import "encoding/json"
 
 const sessionName string = "user-session"
-
 
 var store = sessions.NewCookieStore([]byte("something-very-secret"))
 
@@ -42,12 +42,12 @@ func main() {
 
 	router.HandleFunc("/welcome", LandingPageHandler)
 	router.HandleFunc("/signIn", SignInHandler)
+	router.HandleFunc("/signup", SignUpHandler)
 
 	router.HandleFunc("/dashboard", DashboardHandler)
 	router.HandleFunc("/items", ItemsHandler)
 
 	router.HandleFunc("/show", ShowHandler)
-	router.HandleFunc("/signUp", SignUpHandler)
 	router.HandleFunc("/logOut", LogOutHandler)
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
 	router.HandleFunc("/", SessionHandler)
@@ -87,44 +87,52 @@ func CheckIfSessionIsValid(res http.ResponseWriter, req *http.Request) bool {
 	}
 }
 
-var dbPasswdJson []struct {
-	Username  string `json:"Username"`
-	Password  string `json:"Password"`
+var dbPasswdData []dbPasswdDataEntry
+
+type dbPasswdDataEntry struct {
+	Username string `json:"Username"`
+	Photo    string `json:"Photo"`
+	Db       string `json:"Db"`
+	Password string `json:"Password"`
 }
 
-func userValid(username, password string) (bool) {
+func userValid(username, password string) (dbPasswdDataEntry, bool) {
+	var rentry dbPasswdDataEntry
 	configFile, err := os.Open("db/passwd.json")
 	if err != nil {
 		fmt.Println("opening config file", err.Error())
-		return false
+		return rentry, false
 	}
 
 	jsonParser := json.NewDecoder(configFile)
-	if err = jsonParser.Decode(&dbPasswdJson); err != nil {
+	if err = jsonParser.Decode(&dbPasswdData); err != nil {
 		fmt.Println("parsing config file", err.Error())
-		return false
+		return rentry, false
 	}
 
 	// search hashed password
 	hashedPassword := ""
-	for _, entry := range dbPasswdJson {
+	for _, entry := range dbPasswdData {
 		if entry.Username == username {
+			rentry = entry
 			hashedPassword = entry.Password
+			break
 		}
 	}
 	if hashedPassword == "" {
 		fmt.Println("User not in database or password not available")
-		return false
+		return rentry, false
 	}
 
-	return CheckPassword([]byte(password), []byte(hashedPassword))
+	return rentry, CheckPassword([]byte(password), []byte(hashedPassword))
 }
 
 //handler for signIn
 func SignInHandler(res http.ResponseWriter, req *http.Request) {
 	username, password := req.FormValue("username"), req.FormValue("password")
 
-	if !userValid(username, password) {
+	dbPasswdDataEntry, ret := userValid(username, password)
+	if ret == false {
 		fmt.Printf("Password for user %s invalid\n", username)
 		http.Redirect(res, req, "/welcome", http.StatusFound)
 	}
@@ -132,6 +140,9 @@ func SignInHandler(res http.ResponseWriter, req *http.Request) {
 	sessionNew, _ := store.Get(req, sessionName)
 
 	sessionNew.Values["username"] = username
+	sessionNew.Values["Photo"] = dbPasswdDataEntry.Photo
+	sessionNew.Values["Db"] = dbPasswdDataEntry.Db
+
 	err := sessionNew.Save(req, res)
 	if err != nil {
 		panic("session save error")
@@ -139,11 +150,6 @@ func SignInHandler(res http.ResponseWriter, req *http.Request) {
 	store.Save(req, res, sessionNew)
 
 	http.Redirect(res, req, "/dashboard", http.StatusFound)
-}
-
-//handler for signUp
-func SignUpHandler(res http.ResponseWriter, req *http.Request) {
-
 }
 
 //handler for logOut
@@ -171,10 +177,18 @@ func loadPageTemplate(title string) (*template.Template, error) {
 	return t, nil
 }
 
+func loadPage(title string) ([]byte, error) {
+	filename := "page-templates/" + title + ".html"
+	dat, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	return dat, nil
+}
+
 type Person struct {
 	Name string
 }
-
 
 func LandingPageHandler(res http.ResponseWriter, req *http.Request) {
 	p, err := loadPageTemplate("welcome")

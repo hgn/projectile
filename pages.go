@@ -2,9 +2,38 @@ package main
 
 import "net/http"
 import "io/ioutil"
+import "fmt"
 
 type Navbar struct {
 	Navbar string
+}
+
+func SignUpHandler(res http.ResponseWriter, req *http.Request) {
+	p, err := loadPage("signup")
+	if err != nil {
+		http.Error(res, "Failed to load signin page", http.StatusInternalServerError)
+		fmt.Println("Failed to load page from file: %v", err)
+	}
+	res.Write(p)
+}
+
+type Context struct {
+	Username  string
+	PhotoPath string
+	DbPath    string
+}
+
+func GetContext(req *http.Request) Context {
+	var context Context
+	session, _ := store.Get(req, sessionName)
+	if str, ok := session.Values["Photo"].(string); ok {
+		context.PhotoPath = str
+	}
+	if str, ok := session.Values["Db"].(string); ok {
+		context.DbPath = str
+	}
+
+	return context
 }
 
 func DashboardHandler(res http.ResponseWriter, req *http.Request) {
