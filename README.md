@@ -4,8 +4,18 @@ A multi-user management software to plan, administrate and monitor projects.
 
 # Installation #
 
+Go environment dependencies:
+
+- go
+- git
+- mercurial (for getting bcrypt library from code.google.com)
+
+
+Library dependencies:
+
 - go get github.com/gorilla/sessions
 - go get github.com/gorilla/mux
+- go get code.google.com/p/go.crypto/bcrypt
 
 # Concepts #
 
