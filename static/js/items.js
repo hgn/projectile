@@ -27,6 +27,10 @@ function construct_table(data) {
 	th = document.createElement('th');
 	th.appendChild(document.createTextNode("Associated"));
 	thead_tr.appendChild(th);
+
+	th = document.createElement('th');
+	th.appendChild(document.createTextNode(""));
+	thead_tr.appendChild(th);
 	
 	thead.appendChild(thead_tr);
 	newTable.appendChild(thead);
@@ -41,12 +45,19 @@ function construct_table(data) {
 		td.appendChild(document.createTextNode(data[i]["Priority"]));
 		tr.appendChild(td);
 
+		var description = data[i]["Description"];
+		if (description.length > 120) {
+			description = description.substring(0, 120) + " ...";
+		}
 		td = document.createElement('td');
-		td.appendChild(document.createTextNode(data[i]["Description"]));
+		td.appendChild(document.createTextNode(description));
 		tr.appendChild(td);
 
 		td = document.createElement('td');
-		td.appendChild(document.createTextNode(data[i]["Deadline"]));
+		var attr = document.createAttribute('style');
+		attr.nodeValue = 'white-space: nowrap';
+		td.setAttributeNode(attr);
+		td.innerHTML = '<span class="tag tag-red"></span>&nbsp;' + data[i]["Deadline"]
 		tr.appendChild(td);
 
 		td = document.createElement('td');
@@ -55,6 +66,14 @@ function construct_table(data) {
 
 		td = document.createElement('td');
 		td.appendChild(document.createTextNode(data[i]["AssociatedPerson"]));
+		tr.appendChild(td);
+
+
+		td = document.createElement('td');
+		var attr = document.createAttribute('style');
+		attr.nodeValue = 'white-space: nowrap';
+		td.setAttributeNode(attr);
+		td.innerHTML = '<i class="fa fa-pencil-square-o fa-lg"></i>&nbsp;&nbsp;<i class="fa fa-remove fa-lg"></i>'
 		tr.appendChild(td);
 
 		tbody.appendChild(tr);

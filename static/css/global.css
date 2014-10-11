@@ -14,3 +14,31 @@ body {
 	margin-top:20px;
 }
 
+
+.rectangle{
+	display: inline-block;
+	width:10px;
+	height:20px;
+	background:green;
+}
+
+span.tag {
+ width:12px;
+ height:18px;
+ margin-right:5px;
+ position:relative;
+ border-radius:2px;
+ display:inline-block;
+}
+
+span.tag-red {
+ background:red;
+}
+span.tag-orange {
+ background:orange;
+ box-shadow: 2px 2px 2px #999;
+}
+span.tag-green {
+ background:green;
+ box-shadow: 2px 2px 2px #999;
+}
