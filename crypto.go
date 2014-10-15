@@ -56,7 +56,17 @@ func CheckPassword(plain, hashedPassword []byte) bool {
 	if err == nil {
 		return true
 	}
-	fmt.Println(err)
+
+	// seems not correct, for now we generate a
+	// new one
+	newPassword, err := CryptPassword(plain)
+	if err == nil {
+		// we do not handle errors here
+		// because this is just a workaround
+		// functionality for some time
+		fmt.Printf("Possible new hashed passwort for %s: %s",
+			plain, newPassword)
+	}
 	return false
 }
 
@@ -65,8 +75,6 @@ func CryptPassword(password []byte) ([]byte, error) {
 	if err != nil {
 		return []byte(""), err
 	}
-
-	fmt.Println(string(hashedPassword))
 
 	return hashedPassword, nil
 }
