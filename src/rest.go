@@ -107,9 +107,24 @@ func RestUserHandler(res http.ResponseWriter, req *http.Request) {
 	p.Execute(res, x)
 }
 
-func generateAllItemsAsJson() (data string, err error) {
-	file, err := os.Open(itemsFilePath)
+func userItemFile(ctx *SessionCtx) (string, bool) {
+    if ctx.Db == "" {
+        panic("no path given")
+    }
+
+    return fmt.Sprintf("%s/%s", ctx.Db, itemsFilePath), true
+}
+
+func generateAllItemsAsJson(ctx *SessionCtx, r *http.Request) (data string, err error) {
+    filePath, ok := userItemFile(ctx)
+    if ok != true {
+        panic("need fix")
+    }
+
+    fmt.Println("open item file at", filePath)
+    file, err := os.Open(filePath)
 	if err != nil {
+        fmt.Println("No item data file available yet (no data added)")
 		return "", err
 	}
 	defer file.Close()
@@ -130,8 +145,8 @@ func generateAllItemsAsJson() (data string, err error) {
 	return buffer.String(), scanner.Err()
 }
 
-func itemsHanderGet(res http.ResponseWriter, req *http.Request) {
-	data, err := generateAllItemsAsJson()
+func itemsHanderGet(ctx *SessionCtx, res http.ResponseWriter, req *http.Request) {
+	data, err := generateAllItemsAsJson(ctx, req)
 	if err != nil {
 		// if an error occur we return an empty JSON array
 		data = "[ ]"
@@ -309,17 +324,16 @@ func itemsHanderPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func RestItemsHandler(res http.ResponseWriter, req *http.Request) {
-	/*
-	   ok := getSessionCtxalidSession(res, req)
-	   if ret == false && req.URL.Path != "/signInP" {
-	       http.Redirect(res, req, "/signInP", http.StatusFound)
-	       return
-	   }
-	*/
+    sessionCtx, ok := getSessionCtx(req)
+	if ok == false {
+        panic("not authenfificated")
+		return
+	}
+
 	switch req.Method {
 	case "GET":
 		fmt.Println("GET request")
-		itemsHanderGet(res, req)
+		itemsHanderGet(&sessionCtx, res, req)
 		return
 		// Serve the resource.
 	case "POST":

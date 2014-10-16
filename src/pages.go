@@ -37,8 +37,8 @@ func GetContext(req *http.Request) Context {
 }
 
 func DashboardHandler(res http.ResponseWriter, req *http.Request) {
-	var ret = getSessionCtx(res, req)
-	if ret == false {
+    _, ok := getSessionCtx(req)
+	if ok == false {
 		http.Redirect(res, req, "/signInP", http.StatusFound)
 		return
 	}
@@ -58,8 +58,8 @@ func DashboardHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func ItemsHandler(res http.ResponseWriter, req *http.Request) {
-	ret := getSessionCtx(res, req)
-	if ret == false {
+	_, ok := getSessionCtx(req)
+	if ok == false {
 		http.Redirect(res, req, "/signInP", http.StatusFound)
 		return
 	}

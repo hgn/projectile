@@ -75,21 +75,21 @@ func ShowHandler(res http.ResponseWriter, req *http.Request) {
 
 }
 
-func getSessionCtx(res http.ResponseWriter, req *http.Request) bool {
+func getSessionCtx(req *http.Request) (SessionCtx, bool) {
 	var sessionCtx SessionCtx
 	session, _ := store.Get(req, sessionName)
 	if val, ok := session.Values["username"].(string); ok {
 		// if val is a string
 		switch val {
 		case "":
-			return false
+			return sessionCtx, false
 		default:
 			sessionCtx.Username = val
 			sessionCtx.Db, _ = session.Values["Db"].(string)
-			return true
+			return sessionCtx, true
 		}
 	} else {
-		return false
+		return sessionCtx, false
 	}
 }
 
@@ -141,6 +141,30 @@ func userValid(username, password string) (dbPasswdDataEntry, bool) {
 	return rentry, CheckPassword([]byte(password), []byte(hashedPassword))
 }
 
+func dbPath(entry *dbPasswdDataEntry) string {
+    return fmt.Sprintf("%s-%s", entry.Username, entry.Db)
+}
+
+func checkUserEnvironment(entry *dbPasswdDataEntry) {
+    dbpath := dbPath(entry)
+
+   src, err := os.Stat(dbpath)
+   if err != nil {
+      panic(err)
+   }
+
+   if !src.IsDir() {
+     fmt.Println("User specific directory already created, nothing to do")
+     return
+   }
+
+   fmt.Println("Userdirectory not available, create it now", dbpath)
+   err = os.MkdirAll(dbpath, 0777)
+   if err != nil {
+       fmt.Println("Something failed creating directory", dbpath)
+   }
+}
+
 //handler for signIn
 func SignInHandler(res http.ResponseWriter, req *http.Request) {
 	username, password := req.FormValue("username"), req.FormValue("password")
@@ -156,7 +180,9 @@ func SignInHandler(res http.ResponseWriter, req *http.Request) {
 
 	sessionNew.Values["username"] = username
 	sessionNew.Values["Photo"] = dbPasswdDataEntry.Photo
-	sessionNew.Values["Db"] = fmt.Sprintf("%s-%s", username, dbPasswdDataEntry.Db)
+	sessionNew.Values["Db"] = dbPath(&dbPasswdDataEntry)
+
+    checkUserEnvironment(&dbPasswdDataEntry)
 
 	err := sessionNew.Save(req, res)
 	if err != nil {
