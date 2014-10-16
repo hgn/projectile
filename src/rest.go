@@ -11,37 +11,28 @@ import "time"
 import "bytes"
 import "bufio"
 
-const itemsFilePath string = "db/items.json"
-
-func userHanderGet(res http.ResponseWriter, req *http.Request) {
-	content, err := ioutil.ReadFile("db/users.json")
+func userHanderGet(ctx *SessionCtx, res http.ResponseWriter, req *http.Request) {
+    path := fmt.Sprintf("%s/%s", ctx.Db, "users.json")
+	content, err := ioutil.ReadFile(path)
+	res.Header().Set("Content-Type", "application/json; charset=utf-8")
 	if err != nil {
-		//Do something
 		fmt.Println("Cannot open file for reading %s", err)
-		res.Header().Set("Content-Type", "application/json; charset=utf-8")
 		return
 	}
-	res.Header().Set("Content-Type", "application/json; charset=utf-8")
 	res.Write([]byte(content))
 }
 
 func RestUsersHandler(res http.ResponseWriter, req *http.Request) {
+	ctx, ok := getSessionCtx(req)
+    if !ok {
+		http.Error(res, "Not authorized, sorry", http.StatusUnauthorized)
+        return
+    }
 
-	fmt.Println("enter RestUsersHandler")
-
-	/*
-		var ret = getSessionCtxalidSession(res, req)
-		if ret == false && req.URL.Path != "/signInP" {
-				http.Redirect(res, req, "/signInP", http.StatusFound)
-				return
-		}
-	*/
 	switch req.Method {
 	case "GET":
-		fmt.Println("GET request")
-		userHanderGet(res, req)
+		userHanderGet(&ctx, res, req)
 		return
-		// Serve the resource.
 	case "POST":
 		http.Error(res, "Not allows", http.StatusInternalServerError)
 		return
@@ -107,11 +98,12 @@ func RestUserHandler(res http.ResponseWriter, req *http.Request) {
 	p.Execute(res, x)
 }
 
+const itemsFilePath string = "items.json"
+
 func userItemFile(ctx *SessionCtx) (string, bool) {
     if ctx.Db == "" {
         panic("no path given")
     }
-
     return fmt.Sprintf("%s/%s", ctx.Db, itemsFilePath), true
 }
 
@@ -210,14 +202,14 @@ type ItemJsonData struct {
 
 // Open file in append mode and add
 // JSON encoded line
-func appendItemData(data item_file_line) error {
-
-	_, err := os.Stat(itemsFilePath)
+func appendItemData(ctx *SessionCtx, data item_file_line) error {
+    filepath, _ := userItemFile(ctx)
+    _, err := os.Stat(filepath)
 	if err != nil {
 		// no such file or dir
 	}
 
-	f, err := os.OpenFile(itemsFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+    f, err := os.OpenFile(filepath, os.O_APPEND | os.O_WRONLY | os.O_CREATE, 0600)
 	if err != nil {
 		panic(err)
 	}
@@ -225,7 +217,6 @@ func appendItemData(data item_file_line) error {
 	defer f.Close()
 
 	s, _ := json.Marshal(data)
-
 	if _, err = f.WriteString(string(s) + "\n"); err != nil {
 		panic(err)
 	}
@@ -244,7 +235,7 @@ func getNewItemId() string {
 	return fmt.Sprintf("item-%s%03d", sec, miliSeconds)
 }
 
-func addItem(data ItemJson) error {
+func addItem(ctx *SessionCtx, data ItemJson) error {
 
 	var err error
 
@@ -271,7 +262,7 @@ func addItem(data ItemJson) error {
 	new_data.CreationDate = time.Now().UTC().Format("20060102150405")
 	new_data.ModifiedDate = new_data.CreationDate
 
-	err = appendItemData(new_data)
+	err = appendItemData(ctx, new_data)
 	if err != nil {
 		return err
 	}
@@ -283,7 +274,7 @@ type client_items_response_msg struct {
 	Status string
 }
 
-func itemsHanderPost(w http.ResponseWriter, r *http.Request) {
+func itemsHanderPost(ctx *SessionCtx, w http.ResponseWriter, r *http.Request) {
 	var t ItemJson
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -303,7 +294,7 @@ func itemsHanderPost(w http.ResponseWriter, r *http.Request) {
 	err = errors.New("Not implemented")
 	switch t.Command {
 	case "add":
-		err = addItem(t)
+		err = addItem(ctx, t)
 		// Serve the resource.
 	case "del":
 	default:
@@ -332,27 +323,20 @@ func RestItemsHandler(res http.ResponseWriter, req *http.Request) {
 
 	switch req.Method {
 	case "GET":
-		fmt.Println("GET request")
 		itemsHanderGet(&sessionCtx, res, req)
 		return
-		// Serve the resource.
 	case "POST":
-		fmt.Println("POST request")
-		itemsHanderPost(res, req)
+		itemsHanderPost(&sessionCtx, res, req)
 		return
-		// Create a new record.
 	case "PUT":
 		http.Error(res, "Not allows", http.StatusInternalServerError)
 		return
-		// Update an existing record.
 	case "DELETE":
 		http.Error(res, "Not allows", http.StatusInternalServerError)
 		return
-		// Remove the record.
 	default:
 		http.Error(res, "Not allows", http.StatusInternalServerError)
 		return
-		// Give an error message.
 	}
 
 	http.Error(res, "internal error", http.StatusInternalServerError)

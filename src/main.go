@@ -141,8 +141,10 @@ func userValid(username, password string) (dbPasswdDataEntry, bool) {
 	return rentry, CheckPassword([]byte(password), []byte(hashedPassword))
 }
 
+const dbRootPath string = "db"
+
 func dbPath(entry *dbPasswdDataEntry) string {
-    return fmt.Sprintf("%s-%s", entry.Username, entry.Db)
+    return fmt.Sprintf("%s/%s-%s", dbRootPath, entry.Username, entry.Db)
 }
 
 func checkUserEnvironment(entry *dbPasswdDataEntry) {
@@ -150,10 +152,13 @@ func checkUserEnvironment(entry *dbPasswdDataEntry) {
 
    src, err := os.Stat(dbpath)
    if err != nil {
-      panic(err)
+       err = os.MkdirAll(dbpath, 0777)
+       if err != nil {
+           fmt.Println("Something failed creating directory", dbpath)
+       }
    }
 
-   if !src.IsDir() {
+   if src.IsDir() {
      fmt.Println("User specific directory already created, nothing to do")
      return
    }
