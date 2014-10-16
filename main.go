@@ -4,13 +4,17 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
-	"net/http"
-	//"time"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"text/template"
 )
 import "encoding/json"
+
+type SessionCtx struct {
+	Username string
+	Db       string
+}
 
 const sessionName string = "user-session"
 
@@ -71,8 +75,8 @@ func ShowHandler(res http.ResponseWriter, req *http.Request) {
 
 }
 
-func CheckIfSessionIsValid(res http.ResponseWriter, req *http.Request) bool {
-
+func getSessionCtx(res http.ResponseWriter, req *http.Request) bool {
+	var sessionCtx SessionCtx
 	session, _ := store.Get(req, sessionName)
 	if val, ok := session.Values["username"].(string); ok {
 		// if val is a string
@@ -80,6 +84,8 @@ func CheckIfSessionIsValid(res http.ResponseWriter, req *http.Request) bool {
 		case "":
 			return false
 		default:
+			sessionCtx.Username = val
+			sessionCtx.Db, _ = session.Values["Db"].(string)
 			return true
 		}
 	} else {
@@ -100,7 +106,7 @@ func userValid(username, password string) (dbPasswdDataEntry, bool) {
 	var rentry dbPasswdDataEntry
 	configFile, err := os.Open("db/passwd.json")
 	if err != nil {
-		fmt.Println("opening config file", err.Error())
+		fmt.Println("opening config file failed", err.Error())
 		return rentry, false
 	}
 
@@ -121,6 +127,14 @@ func userValid(username, password string) (dbPasswdDataEntry, bool) {
 	}
 	if hashedPassword == "" {
 		fmt.Println("User not in database or password not available")
+		newPassword, err := CryptPassword([]byte(username))
+		if err == nil {
+			// we do not handle errors here
+			// because this is just a workaround
+			// functionality for some time
+			fmt.Printf("Possible new hashed passwort for %s: %s\n",
+				username, newPassword)
+		}
 		return rentry, false
 	}
 
@@ -135,13 +149,14 @@ func SignInHandler(res http.ResponseWriter, req *http.Request) {
 	if ret == false {
 		fmt.Printf("Password for user %s invalid\n", username)
 		http.Redirect(res, req, "/welcome", http.StatusFound)
+		return
 	}
 
 	sessionNew, _ := store.Get(req, sessionName)
 
 	sessionNew.Values["username"] = username
 	sessionNew.Values["Photo"] = dbPasswdDataEntry.Photo
-	sessionNew.Values["Db"] = dbPasswdDataEntry.Db
+	sessionNew.Values["Db"] = fmt.Sprintf("%s-%s", username, dbPasswdDataEntry.Db)
 
 	err := sessionNew.Save(req, res)
 	if err != nil {

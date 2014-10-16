@@ -30,7 +30,7 @@ func RestUsersHandler(res http.ResponseWriter, req *http.Request) {
 	fmt.Println("enter RestUsersHandler")
 
 	/*
-		var ret = CheckIfSessionIsValid(res, req)
+		var ret = getSessionCtxalidSession(res, req)
 		if ret == false && req.URL.Path != "/signInP" {
 				http.Redirect(res, req, "/signInP", http.StatusFound)
 				return
@@ -91,7 +91,7 @@ func RestUserHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	/*
-		var ret = CheckIfSessionIsValid(res, req)
+		var ret = getSessionCtxalidSession(res, req)
 		if ret == false && req.URL.Path != "/signInP" {
 				http.Redirect(res, req, "/signInP", http.StatusFound)
 				return
@@ -133,7 +133,8 @@ func generateAllItemsAsJson() (data string, err error) {
 func itemsHanderGet(res http.ResponseWriter, req *http.Request) {
 	data, err := generateAllItemsAsJson()
 	if err != nil {
-		panic("cannot open data file")
+		// if an error occur we return an empty JSON array
+		data = "[ ]"
 	}
 	fmt.Println(data)
 	res.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -308,15 +309,12 @@ func itemsHanderPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func RestItemsHandler(res http.ResponseWriter, req *http.Request) {
-
-	fmt.Println("enter RestItemsHandler")
-
 	/*
-		var ret = CheckIfSessionIsValid(res, req)
-		if ret == false && req.URL.Path != "/signInP" {
-				http.Redirect(res, req, "/signInP", http.StatusFound)
-				return
-		}
+	   ok := getSessionCtxalidSession(res, req)
+	   if ret == false && req.URL.Path != "/signInP" {
+	       http.Redirect(res, req, "/signInP", http.StatusFound)
+	       return
+	   }
 	*/
 	switch req.Method {
 	case "GET":
