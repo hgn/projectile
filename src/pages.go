@@ -23,19 +23,6 @@ type Context struct {
 	DbPath    string
 }
 
-func GetContext(req *http.Request) Context {
-	var context Context
-	session, _ := store.Get(req, sessionName)
-	if str, ok := session.Values["Photo"].(string); ok {
-		context.PhotoPath = str
-	}
-	if str, ok := session.Values["Db"].(string); ok {
-		context.DbPath = str
-	}
-
-	return context
-}
-
 func DashboardHandler(res http.ResponseWriter, req *http.Request) {
     _, ok := getSessionCtx(req)
 	if ok == false {
