@@ -49,6 +49,7 @@ func main() {
 	router.HandleFunc("/signup", SignUpHandler)
 
 	router.HandleFunc("/dashboard", DashboardHandler)
+	router.HandleFunc("/projects", ProjectsHandler)
 	router.HandleFunc("/items", ItemsHandler)
 
 	router.HandleFunc("/show", ShowHandler)
@@ -144,30 +145,30 @@ func userValid(username, password string) (dbPasswdDataEntry, bool) {
 const dbRootPath string = "db"
 
 func dbPath(entry *dbPasswdDataEntry) string {
-    return fmt.Sprintf("%s/%s-%s", dbRootPath, entry.Username, entry.Db)
+	return fmt.Sprintf("%s/%s-%s", dbRootPath, entry.Username, entry.Db)
 }
 
 func checkUserEnvironment(entry *dbPasswdDataEntry) {
-    dbpath := dbPath(entry)
+	dbpath := dbPath(entry)
 
-   src, err := os.Stat(dbpath)
-   if err != nil {
-       err = os.MkdirAll(dbpath, 0777)
-       if err != nil {
-           fmt.Println("Something failed creating directory", dbpath)
-       }
-   }
+	src, err := os.Stat(dbpath)
+	if err != nil {
+		err = os.MkdirAll(dbpath, 0777)
+		if err != nil {
+			fmt.Println("Something failed creating directory", dbpath)
+		}
+	}
 
-   if src.IsDir() {
-     fmt.Println("User specific directory already created, nothing to do")
-     return
-   }
+	if src.IsDir() {
+		fmt.Println("User specific directory already created, nothing to do")
+		return
+	}
 
-   fmt.Println("Userdirectory not available, create it now", dbpath)
-   err = os.MkdirAll(dbpath, 0777)
-   if err != nil {
-       fmt.Println("Something failed creating directory", dbpath)
-   }
+	fmt.Println("Userdirectory not available, create it now", dbpath)
+	err = os.MkdirAll(dbpath, 0777)
+	if err != nil {
+		fmt.Println("Something failed creating directory", dbpath)
+	}
 }
 
 //handler for signIn
@@ -187,7 +188,7 @@ func SignInHandler(res http.ResponseWriter, req *http.Request) {
 	sessionNew.Values["Photo"] = dbPasswdDataEntry.Photo
 	sessionNew.Values["Db"] = dbPath(&dbPasswdDataEntry)
 
-    checkUserEnvironment(&dbPasswdDataEntry)
+	checkUserEnvironment(&dbPasswdDataEntry)
 
 	err := sessionNew.Save(req, res)
 	if err != nil {
@@ -198,7 +199,6 @@ func SignInHandler(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, "/dashboard", http.StatusFound)
 }
 
-//handler for logOut
 func LogOutHandler(res http.ResponseWriter, req *http.Request) {
 	sessionOld, err := store.Get(req, sessionName)
 
@@ -239,7 +239,8 @@ type Person struct {
 func LandingPageHandler(res http.ResponseWriter, req *http.Request) {
 	p, err := loadPageTemplate("welcome")
 	if err != nil {
-		http.Error(res, "Failed to load welcome page", http.StatusInternalServerError)
+		http.Error(res, "Failed to load welcome page",
+			http.StatusInternalServerError)
 	}
 	x := Person{Name: "Mary"}
 	p.Execute(res, x)

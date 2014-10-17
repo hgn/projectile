@@ -53,7 +53,30 @@ func ItemsHandler(res http.ResponseWriter, req *http.Request) {
 
 	p, err := loadPageTemplate("items")
 	if err != nil {
+		http.Error(res, "Failed to load queue page",
+			http.StatusInternalServerError)
+	}
+
+	content, err := ioutil.ReadFile("page-templates/navbar.html")
+	if err != nil {
 		http.Error(res, "foooooo", http.StatusInternalServerError)
+	}
+
+	x := Navbar{Navbar: string(content[:])}
+	p.Execute(res, x)
+}
+
+func ProjectsHandler(res http.ResponseWriter, req *http.Request) {
+	_, ok := getSessionCtx(req)
+	if ok == false {
+		http.Redirect(res, req, "/signInP", http.StatusFound)
+		return
+	}
+
+	p, err := loadPageTemplate("projects")
+	if err != nil {
+		http.Error(res, "Failed to load project page",
+			http.StatusInternalServerError)
 	}
 
 	content, err := ioutil.ReadFile("page-templates/navbar.html")
