@@ -342,3 +342,92 @@ func RestItemsHandler(res http.ResponseWriter, req *http.Request) {
 	http.Error(res, "internal error", http.StatusInternalServerError)
 	return
 }
+
+/*
+
+project JSON data
+
+type: [ project | task | deadline ]
+id: [ project-ID | task-ID | deadline-ID
+
+project has no start or endtime. THe starttime is the min
+of all tasks/deadlines. But is never displayed somewhere.
+There can be several projects
+
+tasks have a start and enddata, there must be at least a differnce
+of one day
+
+deadlines have a start and enddata with exactly the same data
+
+tasks can be assigned to exactly one project
+
+deadlines can be assigned to exactly one project
+
+tasks can have one or multiple users
+
+projects, tasks, and deadlines must have a description
+
+*/
+
+type ProjectGetCmdJson struct {
+	Command      string       `json:command"`
+}
+
+func projectsHanderPost(ctx *SessionCtx, w http.ResponseWriter, r *http.Request) {
+	var t ProjectGetCmdJson
+	fmt.Println("xxx")
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println("Failure in reading from client %s", err)
+		return
+	}
+
+
+	err = json.Unmarshal(body, &t)
+	if err != nil {
+		fmt.Println("Failure in item POST struct", err)
+		return
+	}
+
+	fmt.Println(t.Command)
+	err = errors.New("Not implemented")
+	switch t.Command {
+	case "all":
+		fmt.Println("all")
+		return
+	default:
+	}
+
+	panic("")
+}
+
+func RestProjectsHandler(res http.ResponseWriter, req *http.Request) {
+    sessionCtx, ok := getSessionCtx(req)
+	if ok == false {
+        panic("not authenfificated")
+		return
+	}
+
+	fmt.Println("Project handler")
+
+	switch req.Method {
+	case "GET":
+		http.Error(res, "Not allowed", http.StatusInternalServerError)
+		return
+	case "POST":
+		projectsHanderPost(&sessionCtx, res, req)
+		return
+	case "PUT":
+		http.Error(res, "Not allowed", http.StatusInternalServerError)
+		return
+	case "DELETE":
+		http.Error(res, "Not allowed", http.StatusInternalServerError)
+		return
+	default:
+		http.Error(res, "Not allowed", http.StatusInternalServerError)
+		return
+	}
+
+	http.Error(res, "Iinternal error", http.StatusInternalServerError)
+	return
+}

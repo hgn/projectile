@@ -149,10 +149,6 @@ function update_user_database() {
 
 jQuery(document).ready(function($) {
 
-	update_user_database();
-
-	update_items_table();
-
 	$('#form-deadline').datepicker({
 		format: "dd-mm-yyyy"
 	});
@@ -168,10 +164,6 @@ $("#myFormSubmit").click(function(e){
 	e.preventDefault();
 	var robj =  {};
 	robj["Description"] = $('#form-description').val();
-	if (robj["Description"] == "") {
-		alert("Empty Description String");
-		return;
-	}
 	robj["Deadline"] = $('#form-deadline').val();
 	robj["AssignedTo"] = $('#form-assigned').val();
 	robj["AssociatedPersons"] = $('#form-associated').val();
@@ -179,22 +171,10 @@ $("#myFormSubmit").click(function(e){
 	robj["Priority"] = $('#form-priority').val();
 	robj["Information"] = $('#form-information').val();
 
-	console.log(robj["Tags"]);
-	var xobj = { Command: "add",
-								Data: { Description: robj["Description"],
-								Deadline: robj["Deadline"],
-								Tags: robj["Tags"],
-								AssignedTo: robj["AssignedTo"],
-								Priority: robj["Priority"],
-								Information: robj["Information"],
-								AssociatedPersons: robj["AssociatedPersons"]}}
-	$.post('/api/items',
+	var xobj = { command: "all" }
+	$.post('/api/projects',
 			JSON.stringify(xobj),
 			function(data, status, xhr) {
-				// we update the table not immediatly because
-				// we first remove the modal dialog to get a
-				// smoother experience[TM]
-				setTimeout(update_items_table(), 1)
 			});
 	// after submit, disable the modal
 	$('#myModal').modal('toggle');

@@ -11,8 +11,10 @@ type Navbar struct {
 func SignUpHandler(res http.ResponseWriter, req *http.Request) {
 	p, err := loadPage("signup")
 	if err != nil {
-		http.Error(res, "Failed to load signin page", http.StatusInternalServerError)
 		fmt.Println("Failed to load page from file: %v", err)
+		http.Error(res, "Failed to load signin page",
+			http.StatusInternalServerError)
+		return
 	}
 	res.Write(p)
 }
@@ -55,11 +57,14 @@ func ItemsHandler(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		http.Error(res, "Failed to load queue page",
 			http.StatusInternalServerError)
+		return
 	}
 
 	content, err := ioutil.ReadFile("page-templates/navbar.html")
 	if err != nil {
-		http.Error(res, "foooooo", http.StatusInternalServerError)
+		http.Error(res, "Failed to load navigation bar",
+			http.StatusInternalServerError)
+		return
 	}
 
 	x := Navbar{Navbar: string(content[:])}
@@ -77,11 +82,14 @@ func ProjectsHandler(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		http.Error(res, "Failed to load project page",
 			http.StatusInternalServerError)
+		return
 	}
 
 	content, err := ioutil.ReadFile("page-templates/navbar.html")
 	if err != nil {
-		http.Error(res, "foooooo", http.StatusInternalServerError)
+		http.Error(res, "Failed to load navigation bar",
+			http.StatusInternalServerError)
+		return
 	}
 
 	x := Navbar{Navbar: string(content[:])}

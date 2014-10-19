@@ -41,9 +41,10 @@ func main() {
 	// Rest API
 	router.HandleFunc("/api/users", RestUsersHandler)
 	router.HandleFunc("/api/user/{user}", RestUserHandler)
-
 	router.HandleFunc("/api/items", RestItemsHandler)
+	router.HandleFunc("/api/projects", RestProjectsHandler)
 
+	// Page handler
 	router.HandleFunc("/welcome", LandingPageHandler)
 	router.HandleFunc("/signIn", SignInHandler)
 	router.HandleFunc("/signup", SignUpHandler)
